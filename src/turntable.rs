@@ -1,7 +1,8 @@
 use lerp::Lerp;
 use std::time::Instant;
 
-#[derive(Debug)]
+use crate::audio_turntable_controller::AudioTurntableController;
+
 pub struct Turntable {
     pub tempo: f64,
     vinyl_speed: f64,
@@ -12,6 +13,8 @@ pub struct Turntable {
     cumulative_impulse: f64,
     last_tick_timestamp: Instant,
     play: bool,
+    audio_controller: AudioTurntableController,
+    cue: f64,
 }
 
 impl Turntable {
@@ -26,6 +29,8 @@ impl Turntable {
             cumulative_impulse: 0.0,
             last_tick_timestamp: Instant::now(),
             play: true,
+            audio_controller: AudioTurntableController::new(),
+            cue: 0.0,
         }
     }
 
@@ -51,6 +56,16 @@ impl Turntable {
         self.play = !self.play;
     }
 
+    pub fn cue(&mut self) -> f64 {
+        if self.vinyl_lock {
+            self.cue = self.audio_controller.get_position();
+            return self.cue;
+        }
+
+        self.audio_controller.set_position(self.cue);
+        return self.cue;
+    }
+
     pub fn tick(&mut self) {
         let dt = self.last_tick_timestamp.elapsed();
         let dist = self.cumulative_impulse / self.impulses_per_rotation as f64;
@@ -65,15 +80,12 @@ impl Turntable {
                 self.speed = self.speed.lerp(self.tempo, self.torque);
             } else {
                 self.speed = self.speed.lerp(0.0, self.torque);
-                println!("{}", self.speed);
             }
         }
 
         self.cumulative_impulse = 0.0;
         self.last_tick_timestamp = Instant::now();
-    }
 
-    pub fn speed(&self) -> f64 {
-        self.speed
+        self.audio_controller.set_sound_speed(self.speed);
     }
 }

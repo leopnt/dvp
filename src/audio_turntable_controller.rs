@@ -10,22 +10,24 @@ pub struct AudioTurntableController {
     _manager: AudioManager<CpalBackend>,
     _current_file_name: String,
     _sound_data: StaticSoundData,
-    sound: StaticSoundHandle
+    sound: StaticSoundHandle,
 }
 
 impl AudioTurntableController {
     pub fn new() -> Self {
-        let mut manager = AudioManager::<CpalBackend>::new(AudioManagerSettings::default()).unwrap();
+        let mut manager =
+            AudioManager::<CpalBackend>::new(AudioManagerSettings::default()).unwrap();
         let current_file_name = String::from("resources/Bazz.wav");
         println!("Loading... {}", &current_file_name);
-        let sound_data = StaticSoundData::from_file(&current_file_name, StaticSoundSettings::new()).unwrap();
+        let sound_data =
+            StaticSoundData::from_file(&current_file_name, StaticSoundSettings::new()).unwrap();
         let sound = manager.play(sound_data.clone()).unwrap();
 
         AudioTurntableController {
             _manager: manager,
             _current_file_name: current_file_name,
             _sound_data: sound_data,
-            sound: sound
+            sound: sound,
         }
     }
 
@@ -39,5 +41,13 @@ impl AudioTurntableController {
                 },
             )
             .unwrap();
+    }
+
+    pub fn get_position(&self) -> f64 {
+        self.sound.position()
+    }
+
+    pub fn set_position(&mut self, position: f64) {
+        self.sound.seek_to(position).unwrap();
     }
 }

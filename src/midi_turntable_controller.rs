@@ -71,18 +71,28 @@ pub fn on_midi(event: &[u8], turntable: &mut Turntable) {
         LiveEvent::Midi { channel, message } => match message {
             MidiMessage::NoteOn { key, vel } => {
                 if key == 54 {
-                    if vel == 0 { // left jog touch release
+                    if vel == 0 {
+                        // left jog touch release
                         turntable.release_vinyl();
                     }
 
-                    if vel == 127 { // left jog touch press
+                    if vel == 127 {
+                        // left jog touch press
                         turntable.catch_vinyl();
                     }
                 }
 
                 if key == 11 {
-                    if vel == 127 { // left play button press
+                    if vel == 127 {
+                        // left play button press
                         turntable.toggle_play();
+                    }
+                }
+
+                if key == 12 {
+                    if vel == 127 {
+                        // left cue button press
+                        turntable.cue();
                     }
                 }
             }

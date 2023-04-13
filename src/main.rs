@@ -12,7 +12,6 @@ mod midi_turntable_controller;
 use crate::midi_turntable_controller::new_connection;
 
 mod audio_turntable_controller;
-use crate::audio_turntable_controller::AudioTurntableController;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let turntable: Arc<Mutex<Turntable>> = Arc::new(Mutex::new(Turntable::new()));
@@ -20,16 +19,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // _midi_controller needs to be a named parameter, because it needs to be kept alive until the end of the scope
     let _midi_controller = new_connection(&turntable);
 
-    let mut audio_controller = AudioTurntableController::new();
-
     // Enable raw mode to receive input events
     enable_raw_mode()?;
 
     loop {
         // Poll for events
         turntable.lock().unwrap().tick();
-
-        audio_controller.set_sound_speed(turntable.lock().unwrap().speed());
 
         if event::poll(std::time::Duration::from_millis(50))? {
             if let Event::Key(key_event) = event::read()? {

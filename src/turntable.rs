@@ -11,6 +11,7 @@ pub struct Turntable {
     impulses_per_rotation: usize,
     cumulative_impulse: f64,
     last_tick_timestamp: Instant,
+    play: bool,
 }
 
 impl Turntable {
@@ -20,10 +21,11 @@ impl Turntable {
             vinyl_lock: false,
             tempo: 1.0,
             speed: 1.0,
-            torque: 0.5,
+            torque: 0.3,
             impulses_per_rotation: 500, // number of MIDI events to make one rotation
             cumulative_impulse: 0.0,
             last_tick_timestamp: Instant::now(),
+            play: true,
         }
     }
 
@@ -45,6 +47,10 @@ impl Turntable {
         self.cumulative_impulse -= 1.0;
     }
 
+    pub fn toggle_play(&mut self) {
+        self.play = !self.play;
+    }
+
     pub fn tick(&mut self) {
         let dt = self.last_tick_timestamp.elapsed();
         let dist = self.cumulative_impulse / self.impulses_per_rotation as f64;
@@ -52,10 +58,15 @@ impl Turntable {
 
         self.vinyl_speed = dv;
 
-        if !self.vinyl_lock {
-            self.speed = self.speed.lerp(self.tempo, self.torque);
-        } else {
+        if self.vinyl_lock {
             self.speed = self.vinyl_speed;
+        } else {
+            if self.play {
+                self.speed = self.speed.lerp(self.tempo, self.torque);
+            } else {
+                self.speed = self.speed.lerp(0.0, self.torque);
+                println!("{}", self.speed);
+            }
         }
 
         self.cumulative_impulse = 0.0;

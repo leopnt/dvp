@@ -65,16 +65,24 @@ pub fn new_connection(
 
 pub fn on_midi(event: &[u8], turntable: &mut Turntable) {
     let event = LiveEvent::parse(event).unwrap();
+
+    // react to hard-coded values for DDJ-400
     match event {
         LiveEvent::Midi { channel, message } => match message {
             MidiMessage::NoteOn { key, vel } => {
                 if key == 54 {
-                    if vel == 0 {
+                    if vel == 0 { // left jog touch release
                         turntable.release_vinyl();
                     }
 
-                    if vel == 127 {
+                    if vel == 127 { // left jog touch press
                         turntable.catch_vinyl();
+                    }
+                }
+
+                if key == 11 {
+                    if vel == 127 { // left play button press
+                        turntable.toggle_play();
                     }
                 }
             }
